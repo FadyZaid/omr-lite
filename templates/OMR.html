@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>OMR Lite - Scan</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='OMR.css') }}" />
+        <link rel="stylesheet" href="{{ url_for('static', filename='shared.css') }}" />
+        <link rel="stylesheet" href="{{ url_for('static', filename='QuestionAnalysis.css') }}" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    </head>
+
+    <body data-username="{{ username }}">
+        <div class="toast-container" id="toastContainer"></div>
+
+        <nav class="top-nav">
+            <div class="nav-container">
+                <a href="{{ url_for('omr_page') }}" class="nav-brand">
+                    <span style="color: white; font-weight: 700; font-size: 1.1rem;">OMR Lite</span>
+                </a>
+                <div class="nav-menu">
+                    <a href="{{ url_for('omr_page') }}" class="nav-item active"><i class="fas fa-qrcode"></i> Scan</a>
+                    <a href="{{ url_for('history_page') }}" class="nav-item"><i class="fas fa-history"></i> History</a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="padded-container">
+            <div class="container">
+                <div class="container">
+                    <div class="header">
+                        <h1>OMR Lite</h1>
+                        <p>Optical Mark Recognition Scanner</p>
+                    </div>
+                </div>
+
+                <div class="main-content">
+                    <div class="section" id="pdfProcessing">
+                        <h2><i class="fas fa-file-pdf"></i> Step 0 (Optional): Process PDF</h2>
+                        <p class="section-description">
+                            Upload a PDF with multiple pages to automatically rotate, align, and straighten the images.
+                        </p>
+
+                        <div class="pdf-controls">
+                            <div class="form-group">
+                                <label for="pdfFileInput">Upload PDF:</label>
+                                <input type="file" id="pdfFileInput" accept=".pdf" class="form-control" />
+                            </div>
+
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox" id="autoDeskew" checked />
+                                    Auto-detect and fix skew (straighten tilted pages)
+                                </label>
+                                <small class="form-text">Automatically detect and correct page alignment issues</small>
+                            </div>
+
+                            <button class="btn btn-primary" id="processPdfButton" onclick="window.scanner.rotateAlignPDF()">
+                                <i class="fas fa-sync-alt"></i> Process PDF
+                            </button>
+                        </div>
+                        <div id="pdfProcessingStatus" class="status-message" style="display: none"></div>
+                    </div>
+
+                    <div class="section">
+                        <h2><i class="fas fa-file-upload"></i> Step 1: Upload Template Sheet</h2>
+                        <div class="upload-area" id="templateUpload">
+                            <div class="upload-icon"><i class="fas fa-folder-open"></i></div>
+                            <p><strong>Click to upload template</strong> or drag and drop</p>
+                            <p>Supports: JPG, PNG, PDF</p>
+                            <input type="file" id="templateFile" accept="image/*,.pdf" style="display: none" />
+                        </div>
+
+                        <div
+                            id="templateSuccess"
+                            style="
+                                display: none;
+                                margin-top: 20px;
+                                padding: 15px;
+                                background-color: #d4edda;
+                                border: 1px solid #c3e6cb;
+                                border-radius: 5px;
+                                color: #155724;
+                            "
+                        >
+                            <i class="fas fa-check-circle" style="margin-right: 10px"></i>
+                            <strong>Template uploaded successfully!</strong>
+                            <span id="templateFileName" style="margin-left: 10px; font-style: italic"></span>
+                        </div>
+
+                        <div class="template-preview" id="templatePreview" style="display: none">
+                            <img id="templateImage" alt="Template Preview" />
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h2><i class="fas fa-file-alt"></i> Step 1.5 (Optional): Upload Question Paper</h2>
+                        <p class="section-description">
+                            Upload the question paper PDF or image to make it accessible from the history page.
+                        </p>
+
+                        <div class="upload-area" id="questionPaperUpload">
+                            <div class="upload-icon"><i class="fas fa-file-pdf"></i></div>
+                            <p><strong>Click to upload question paper</strong> or drag and drop</p>
+                            <p>Supports: JPG, PNG, PDF</p>
+                            <input type="file" id="questionPaperFile" accept="image/*,.pdf" style="display: none" />
+                        </div>
+
+                        <div
+                            id="questionPaperSuccess"
+                            style="
+                                display: none;
+                                margin-top: 20px;
+                                padding: 15px;
+                                background-color: #d4edda;
+                                border: 1px solid #c3e6cb;
+                                border-radius: 5px;
+                                color: #155724;
+                            "
+                        >
+                            <i class="fas fa-check-circle" style="margin-right: 10px"></i>
+                            <strong>Question paper uploaded successfully!</strong>
+                            <span id="questionPaperFileName" style="margin-left: 10px; font-style: italic"></span>
+                            <button
+                                class="btn btn-sm btn-secondary"
+                                id="removeQuestionPaperBtn"
+                                style="margin-left: 15px; padding: 5px 10px"
+                            >
+                                <i class="fas fa-times"></i> Remove
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h2><i class="fas fa-vector-square"></i> Step 2: Define Regions of Interest (ROI)</h2>
+
+                        <div class="threshold-control-panel">
+                            <div class="control-group">
+                                <label for="bubble-threshold-slider" class="control-label">
+                                    <strong>Global Bubble Fill Threshold:</strong>
+                                    <span id="threshold-value-display">0.6</span>
+                                </label>
+                                <input
+                                    type="range"
+                                    id="bubble-threshold-slider"
+                                    class="threshold-slider"
+                                    min="0.1"
+                                    max="0.9"
+                                    step="0.1"
+                                    value="0.6"
+                                />
+                                <div class="threshold-info">
+                                    <small>Adjust to control when bubbles appear as filled (green) or unfilled (red)</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="button-group">
+                            <button class="btn" id="defineROIBtn" disabled>
+                                <i class="fas fa-object-group"></i> Define ROI Areas
+                            </button>
+                        </div>
+
+                        <div class="scale-control-standalone" id="scaleControlStandalone" style="display: none">
+                            <label>Template Scale:</label>
+                            <input type="range" id="scalePercentage" min="10" max="200" value="100" />
+                            <span id="scaleValue">100%</span>
+                            <small>Adjust the scale for better ROI selection</small>
+                        </div>
+
+                        <div class="canvas-container" id="canvasContainer">
+                            <canvas id="roiCanvas"></canvas>
+                            <p>Click and drag to select areas containing bubbles</p>
+                        </div>
+
+                        <div class="roi-container" id="roiContainer">
+                            <h3>ROI Configuration</h3>
+                            <div id="bubble-count-display"></div>
+                            <div id="roiList"></div>
+                            <div class="button-group">
+                                <button class="btn btn-secondary" id="addROIBtn">
+                                    <i class="fas fa-plus"></i> Add ROI Manually
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h2><i class="fas fa-key"></i> Step 3: Set Answer Key</h2>
+                        <div class="answer-key-section">
+                            <div
+                                style="
+                                    display: flex;
+                                    justify-content: space-between;
+                                    align-items: center;
+                                    margin-bottom: 15px;
+                                "
+                            >
+                                <h3>Correct Answers</h3>
+                                <div class="input-mode-selector">
+                                    <label style="margin-right: 10px; font-weight: 600">Input Mode:</label>
+                                    <select
+                                        id="answerKeyModeSelect"
+                                        class="form-control"
+                                        style="width: auto; display: inline-block"
+                                    >
+                                        <option value="individual">One by One</option>
+                                        <option value="bulk">Bulk Copy-Paste</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="answer-key-container" id="answerKeyContainer">
+                                <div class="no-questions-message">
+                                    <i class="fas fa-info-circle"></i>
+                                    <p>Please define ROI areas first to generate answer key inputs.</p>
+                                </div>
+                            </div>
+
+                            <div class="button-group" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap">
+                                <button
+                                    class="btn btn-primary"
+                                    id="submitAnswerKeyBtn"
+                                    disabled
+                                    style="background: linear-gradient(135deg, #48bb78 0%, #38a169 100%)"
+                                >
+                                    <i class="fas fa-check"></i> Submit Answers
+                                </button>
+                                <button class="btn btn-secondary" id="refreshAnswerKeyBtn" disabled>
+                                    <i class="fas fa-sync-alt"></i> Refresh Answer Key Inputs
+                                </button>
+                                <small class="form-text" style="flex-basis: 100%">
+                                    Submit: Save your current answers | Refresh: Clear and regenerate inputs after
+                                    adding/removing ROIs
+                                </small>
+                            </div>
+                        </div>
+                        <div class="answer-key-alert" id="answerKeyAlert">
+                            <span class="alert-icon"><i class="fas fa-check-circle"></i></span>
+                            <span id="alertMsg"></span>
+                            <button class="alert-close" onclick="this.parentElement.classList.remove('show')">&times;</button>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h2><i class="fas fa-file-upload"></i> Step 4: Upload Answer Sheets</h2>
+
+                        <div class="form-group batch-name-group">
+                            <label for="batchName">Batch Name (Optional):</label>
+                            <input
+                                type="text"
+                                id="batchName"
+                                class="form-control"
+                                placeholder="e.g., 'Math Quiz 1', 'Final Exam 2024', 'Chapter 5 Test'"
+                                maxlength="100"
+                            />
+                            <small class="form-text">
+                                Give this batch a memorable name. If left empty, a timestamp will be used.
+                            </small>
+                        </div>
+
+                        <div class="upload-area" id="scanUpload">
+                            <div class="upload-icon"><i class="fas fa-file-alt"></i></div>
+                            <p><strong>Click to upload answer sheets</strong> or drag and drop</p>
+                            <p>Select multiple files to batch process</p>
+                            <input type="file" id="scanFiles" accept="image/*,.pdf" multiple style="display: none" />
+                        </div>
+                        <div id="selectedFilesList" class="file-list">
+                            <div class="no-files">No files selected</div>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h2><i class="fas fa-bolt"></i> Step 5: Process & Results</h2>
+
+                        <div class="button-group action-buttons-center">
+                            <button class="btn btn-success" id="startScanBtn" disabled>
+                                <i class="fas fa-play"></i> Start Scanning
+                            </button>
+                        </div>
+
+                        <div id="statusMessage" class="status-message"></div>
+
+                        <div class="progress-bar" id="progressBar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+
+                        <div class="review-container" id="reviewContainer" style="display: none">
+                            <h2>Manual Review Required</h2>
+                            <p>
+                                The following questions could not be graded automatically. Please review each item and make a
+                                selection.
+                            </p>
+                            <div id="reviewItems"></div>
+                            <div class="button-group action-buttons-center">
+                                <button class="btn btn-primary" id="finalizeScanBtn">Finalize and Save All Results</button>
+                            </div>
+                        </div>
+
+                        <div class="results-container" id="resultsContainer" style="display: none">
+                            <h3>Scan Results</h3>
+                            <div id="resultsContent"></div>
+
+                            <div class="download-buttons">
+                                <button class="btn btn-success" id="downloadExcel">
+                                    <i class="fas fa-file-excel"></i> Download Excel
+                                </button>
+                                <button class="btn btn-secondary" id="downloadCSV">
+                                    <i class="fas fa-file-csv"></i> Download CSV
+                                </button>
+                                <button class="btn btn-info" id="analyzeQuestionsBtn">
+                                    <i class="fas fa-chart-bar"></i> Analyze Questions
+                                </button>
+                                <a href="{{ url_for('history_page') }}" class="btn btn-primary">
+                                    <i class="fas fa-history"></i> View History
+                                </a>
+                            </div>
+
+                            <div id="analysisContainer" style="display: none; margin-top: 30px"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script src="{{ url_for('static', filename='App.js') }}"></script>
+        <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+        <script src="{{ url_for('static', filename='QuestionAnalysis.js') }}"></script>
+        <script>
+            document.addEventListener("DOMContentLoaded", () => {
+                const analyzeBtn = document.getElementById("analyzeQuestionsBtn");
+                if (analyzeBtn) {
+                    analyzeBtn.addEventListener("click", () => {
+                        if (scanner.currentBatchId && scanner.submittedAnswerKey) {
+                            window.questionAnalysis.fetchAndDisplay(
+                                scanner.currentBatchId,
+                                scanner.submittedAnswerKey,
+                                "analysisContainer"
+                            );
+                        } else {
+                            const missing = [];
+                            if (!scanner.currentBatchId) missing.push("batch ID");
+                            if (!scanner.submittedAnswerKey) missing.push("answer key");
+                            alert(`Cannot analyze: Missing ${missing.join(" and ")}. Please complete the scan process first.`);
+                        }
+                    });
+                }
+            });
+        </script>
+    </body>
+</html>

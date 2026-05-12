@@ -1,0 +1,161 @@
+/* QuestionAnalysis.css - Shared styles for question analysis component */
+
+:root {
+    --qa-primary-color: #16697a;
+    --qa-primary-light: #48a9a6;
+    --qa-primary-dark: #0a3a4a;
+    --qa-success-color: #38a169;
+    --qa-warning-color: #dd6b20;
+    --qa-danger-color: #e53e3e;
+    --qa-neutral-border: #e2e8f0;
+}
+
+/* Chart Container */
+.chart-container {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    margin-top: 30px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    border: 1px solid var(--qa-neutral-border);
+}
+
+.chart-container h4 {
+    color: #2d3748;
+    font-weight: 700;
+    margin-bottom: 20px;
+    font-size: 1.3rem;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--qa-neutral-border);
+}
+
+/* Badge styles for difficulty */
+.badge {
+    padding: 6px 12px;
+    font-weight: 600;
+    border-radius: 8px;
+    font-size: 0.85rem;
+}
+
+.badge.bg-success {
+    background: linear-gradient(135deg, #48bb78 0%, var(--qa-success-color) 100%) !important;
+    color: white;
+}
+
+.badge.bg-warning {
+    background: linear-gradient(135deg, #ed8936 0%, var(--qa-warning-color) 100%) !important;
+    color: white;
+}
+
+.badge.bg-danger {
+    background: linear-gradient(135deg, #f56565 0%, var(--qa-danger-color) 100%) !important;
+    color: white;
+}
+
+.badge.bg-primary {
+    background: linear-gradient(135deg, var(--qa-primary-light) 0%, var(--qa-primary-color) 100%) !important;
+    color: white;
+}
+
+.badge.bg-info {
+    background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%) !important;
+    color: white;
+}
+
+/* Loading and Error States */
+.loading-spinner {
+    text-align: center;
+    padding: 40px;
+    font-size: 1.2rem;
+    color: var(--qa-primary-color);
+}
+
+.loading-spinner i {
+    font-size: 2rem;
+    margin-bottom: 10px;
+    display: block;
+}
+
+.error-message {
+    background: #fff5f5;
+    color: var(--qa-danger-color);
+    padding: 20px;
+    border-radius: 8px;
+    border-left: 4px solid var(--qa-danger-color);
+    text-align: center;
+}
+
+.error-message i {
+    margin-right: 8px;
+}
+
+/* Table Styling for Analysis */
+.chart-container table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.chart-container table thead {
+    position: sticky;
+    top: 0;
+    background: linear-gradient(135deg, #2c5282 0%, #3182ce 100%);
+    color: white;
+    z-index: 10;
+}
+
+.chart-container table th {
+    padding: 12px;
+    text-align: center;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.8rem;
+}
+
+.chart-container table td {
+    padding: 12px;
+    text-align: center;
+    border-bottom: 1px solid var(--qa-neutral-border);
+}
+
+.chart-container table tbody tr {
+    transition: background 0.2s;
+}
+
+.chart-container table tbody tr:hover {
+    background: #f7fafc;
+}
+
+/* Text Colors */
+.text-success {
+    color: var(--qa-success-color) !important;
+}
+
+.text-danger {
+    color: var(--qa-danger-color) !important;
+}
+
+.text-warning {
+    color: var(--qa-warning-color) !important;
+}
+
+.text-muted {
+    color: #718096 !important;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .chart-container {
+        padding: 20px;
+    }
+
+    .chart-container h4 {
+        font-size: 1.1rem;
+    }
+
+    .chart-container table th,
+    .chart-container table td {
+        padding: 8px;
+        font-size: 0.85rem;
+    }
+}

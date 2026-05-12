@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>OMR Lite - History</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+        <link rel="stylesheet" href="{{ url_for('static', filename='shared.css') }}" />
+        <link rel="stylesheet" href="{{ url_for('static', filename='QuestionAnalysis.css') }}" />
+        <style>
+            :root {
+                --primary-color: #16697a;
+                --primary-light: #48a9a6;
+                --primary-dark: #0a3a4a;
+                --primary-background: #e8f6f8;
+                --text-dark: #212529;
+                --text-light: #52616b;
+                --neutral-bg: #f8f9fa;
+                --neutral-border: #dde6ed;
+                --success-color: #38a169;
+                --warning-color: #dd6b20;
+                --danger-color: #e53e3e;
+                --shadow-soft: 0 20px 40px rgba(0, 0, 0, 0.1);
+            }
+
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, sans-serif;
+                line-height: 1.6;
+                color: var(--text-dark);
+                background: linear-gradient(135deg, var(--primary-background) 0%, #ffffff 100%);
+                min-height: 100vh;
+            }
+
+            .main-container {
+                max-width: 1200px;
+                margin: 0 auto;
+                padding: 20px;
+            }
+
+            .page-header {
+                background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary-color) 100%);
+                color: white;
+                padding: 30px;
+                text-align: center;
+                border-radius: 20px;
+                margin-bottom: 30px;
+                box-shadow: var(--shadow-soft);
+            }
+
+            .batch-card {
+                background: white;
+                border-radius: 18px;
+                margin-bottom: 20px;
+                box-shadow: var(--shadow-soft);
+                border: 1px solid var(--neutral-border);
+                overflow: hidden;
+            }
+
+            .batch-header {
+                background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary-color) 100%);
+                color: white;
+                padding: 20px 28px;
+                cursor: pointer;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .batch-title {
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
+            }
+
+            .batch-title h3 {
+                margin: 0;
+                font-size: 1.3rem;
+                font-weight: 700;
+            }
+
+            .batch-meta {
+                font-size: 0.9rem;
+                opacity: 0.9;
+            }
+
+            .batch-body {
+                padding: 24px 28px;
+                background: var(--neutral-bg);
+                display: none;
+            }
+
+            .batch-actions {
+                display: flex;
+                gap: 10px;
+                flex-wrap: wrap;
+                margin-bottom: 18px;
+            }
+
+            .btn-action {
+                border: none;
+                padding: 10px 16px;
+                border-radius: 8px;
+                font-weight: 600;
+                color: white;
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                cursor: pointer;
+                text-decoration: none;
+            }
+
+            .btn-success {
+                background: linear-gradient(135deg, #48bb78 0%, var(--success-color) 100%);
+            }
+
+            .btn-info {
+                background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+            }
+
+            .btn-primary {
+                background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary-color) 100%);
+            }
+
+            .btn-warning {
+                background: linear-gradient(135deg, #ed8936 0%, var(--warning-color) 100%);
+            }
+
+            .btn-danger {
+                background: linear-gradient(135deg, #f56565 0%, var(--danger-color) 100%);
+            }
+
+            .results-table {
+                width: 100%;
+                border-collapse: separate;
+                border-spacing: 0;
+                background: white;
+                border-radius: 12px;
+                overflow: hidden;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+                border: 1px solid var(--neutral-border);
+            }
+
+            .results-table thead {
+                background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-color) 100%);
+                color: white;
+            }
+
+            .results-table th,
+            .results-table td {
+                padding: 12px 14px;
+                text-align: center;
+                border-bottom: 1px solid #e2e8f0;
+                font-size: 0.9rem;
+            }
+
+            .results-table tbody tr:hover {
+                background: #f7fafc;
+            }
+
+            .image-btn {
+                border: 2px solid var(--primary-color);
+                color: var(--primary-color);
+                background: transparent;
+                border-radius: 8px;
+                padding: 6px 12px;
+                font-weight: 600;
+            }
+
+            .empty-state {
+                text-align: center;
+                padding: 60px 20px;
+                background: white;
+                border-radius: 20px;
+                box-shadow: var(--shadow-soft);
+                border: 1px solid var(--neutral-border);
+            }
+        </style>
+    </head>
+
+    <body data-username="{{ username }}">
+        <nav class="top-nav">
+            <div class="nav-container">
+                <a href="{{ url_for('omr_page') }}" class="nav-brand">
+                    <span style="color: white; font-weight: 700; font-size: 1.1rem;">OMR Lite</span>
+                </a>
+                <div class="nav-menu">
+                    <a href="{{ url_for('omr_page') }}" class="nav-item"><i class="fas fa-qrcode"></i> Scan</a>
+                    <a href="{{ url_for('history_page') }}" class="nav-item active"><i class="fas fa-history"></i> History</a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="main-container">
+            <div class="page-header">
+                <h1><i class="fas fa-history"></i> Scan History</h1>
+                <p>Review batches, download results, and analyze performance.</p>
+            </div>
+
+            {% if history|length == 0 %}
+            <div class="empty-state">
+                <i class="fas fa-inbox" style="font-size: 3rem; color: var(--text-light);"></i>
+                <h3 style="margin-top: 16px;">No batches yet</h3>
+                <p>Run your first scan to see results here.</p>
+            </div>
+            {% endif %}
+
+            {% for item in history %}
+            <div class="batch-card" data-batch-id="{{ item.batch_info.id }}" data-answer-key='{{ item.batch_info.answer_key | tojson | safe }}'>
+                <div class="batch-header" onclick="toggleBatch({{ item.batch_info.id }})">
+                    <div class="batch-title">
+                        <h3 id="batch-name-{{ item.batch_info.id }}">{{ item.batch_info.batch_name or ('Batch_' ~ item.batch_info.id) }}</h3>
+                        <div class="batch-meta">
+                            {{ item.batch_info.batch_datetime }} | {{ item.batch_info.paper_count }} papers
+                        </div>
+                    </div>
+                    <i class="fas fa-chevron-down" id="batch-icon-{{ item.batch_info.id }}"></i>
+                </div>
+                <div class="batch-body" id="batch-body-{{ item.batch_info.id }}">
+                    <div class="batch-actions">
+                        <button class="btn-action btn-success" onclick="downloadBatchExcel({{ item.batch_info.id }})">
+                            <i class="fas fa-file-excel"></i> Excel
+                        </button>
+                        <button class="btn-action btn-info" onclick="downloadBatchCSV({{ item.batch_info.id }})">
+                            <i class="fas fa-file-csv"></i> CSV
+                        </button>
+                        <button class="btn-action btn-primary" onclick="analyzeBatch({{ item.batch_info.id }})">
+                            <i class="fas fa-chart-bar"></i> Analyze
+                        </button>
+                        {% if item.batch_info.question_paper_path %}
+                        <button class="btn-action btn-warning" onclick="viewQuestionPaper({{ item.batch_info.id }})">
+                            <i class="fas fa-file-pdf"></i> Question Paper
+                        </button>
+                        {% endif %}
+                        <button class="btn-action btn-primary" onclick="renameBatch({{ item.batch_info.id }})">
+                            <i class="fas fa-edit"></i> Rename
+                        </button>
+                        <button class="btn-action btn-danger" onclick="deleteBatch({{ item.batch_info.id }})">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="results-table">
+                            <thead>
+                                <tr>
+                                    <th>Student ID</th>
+                                    <th>Score</th>
+                                    <th>Total</th>
+                                    <th>Visualization</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for result in item.results %}
+                                <tr>
+                                    <td>{{ result.student_id }}</td>
+                                    <td>{{ result.score }}</td>
+                                    <td>{{ result.total_questions }}</td>
+                                    <td>
+                                        {% if result.visualization_url %}
+                                        <button class="image-btn" onclick="openImageModal('{{ result.visualization_url }}')">
+                                            <i class="fas fa-eye"></i> View
+                                        </button>
+                                        {% else %}
+                                        <span class="text-muted">N/A</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div id="analysis-{{ item.batch_info.id }}" style="display: none; margin-top: 20px;"></div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="modal fade" id="imageModal" tabindex="-1">
+            <div class="modal-dialog modal-xl modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title"><i class="fas fa-image"></i> Visualization</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div style="text-align: center; background: #0f172a; padding: 20px; border-radius: 12px;">
+                            <img id="modalImage" src="" alt="Visualization" style="max-width: 100%; border-radius: 12px;" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+        <script src="{{ url_for('static', filename='QuestionAnalysis.js') }}"></script>
+        <script>
+            function toggleBatch(batchId) {
+                const body = document.getElementById(`batch-body-${batchId}`);
+                const icon = document.getElementById(`batch-icon-${batchId}`);
+                if (!body) return;
+
+                const isOpening = body.style.display === "none" || !body.style.display;
+                body.style.display = isOpening ? "block" : "none";
+                if (icon) {
+                    icon.classList.toggle("fa-chevron-up", isOpening);
+                    icon.classList.toggle("fa-chevron-down", !isOpening);
+                }
+            }
+
+            function getAnswerKey(batchId) {
+                const card = document.querySelector(`[data-batch-id="${batchId}"]`);
+                if (!card) return null;
+                const raw = card.dataset.answerKey;
+                if (!raw) return null;
+                try {
+                    const parsed = JSON.parse(raw);
+                    return typeof parsed === "string" ? parsed : JSON.stringify(parsed);
+                } catch (err) {
+                    return raw;
+                }
+            }
+
+            function downloadBatchExcel(batchId) {
+                const answerKey = getAnswerKey(batchId);
+                if (!answerKey) {
+                    alert("Answer key not found for this batch.");
+                    return;
+                }
+                const url = `/download_excel/${batchId}?answer_key=${encodeURIComponent(answerKey)}`;
+                window.location.href = url;
+            }
+
+            function downloadBatchCSV(batchId) {
+                const answerKey = getAnswerKey(batchId);
+                if (!answerKey) {
+                    alert("Answer key not found for this batch.");
+                    return;
+                }
+                const url = `/download_csv/${batchId}?answer_key=${encodeURIComponent(answerKey)}`;
+                window.location.href = url;
+            }
+
+            function analyzeBatch(batchId) {
+                const answerKey = getAnswerKey(batchId);
+                if (!answerKey) {
+                    alert("Answer key not found for this batch.");
+                    return;
+                }
+                const containerId = `analysis-${batchId}`;
+                const container = document.getElementById(containerId);
+                if (container && container.style.display === "block") {
+                    container.style.display = "none";
+                    return;
+                }
+                window.questionAnalysis.fetchAndDisplay(batchId, answerKey, containerId);
+            }
+
+            function viewQuestionPaper(batchId) {
+                window.open(`/question_paper/${batchId}`, "_blank");
+            }
+
+            async function renameBatch(batchId) {
+                const currentName = document.getElementById(`batch-name-${batchId}`).textContent.trim();
+                const newName = prompt("Enter new batch name:", currentName);
+                if (!newName || newName.trim() === currentName) return;
+
+                const response = await fetch(`/rename_batch/${batchId}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ new_batch_name: newName.trim() }),
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    document.getElementById(`batch-name-${batchId}`).textContent = result.new_batch_name;
+                } else {
+                    alert(result.error || "Failed to rename batch.");
+                }
+            }
+
+            async function deleteBatch(batchId) {
+                if (!confirm("Delete this batch? This cannot be undone.")) return;
+                const response = await fetch(`/delete_batch/${batchId}`, { method: "DELETE" });
+                const result = await response.json();
+                if (result.success) {
+                    const card = document.querySelector(`[data-batch-id="${batchId}"]`);
+                    if (card) card.remove();
+                } else {
+                    alert(result.error || "Failed to delete batch.");
+                }
+            }
+
+            function openImageModal(url) {
+                const modalImage = document.getElementById("modalImage");
+                modalImage.src = url;
+                const modal = new bootstrap.Modal(document.getElementById("imageModal"));
+                modal.show();
+            }
+        </script>
+    </body>
+</html>
